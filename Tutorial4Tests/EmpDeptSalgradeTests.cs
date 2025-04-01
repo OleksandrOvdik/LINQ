@@ -1,4 +1,5 @@
-﻿using Tutorial3.Models;
+﻿using System.Threading.Tasks.Dataflow;
+using Tutorial3.Models;
 
 public class EmpDeptSalgradeTests
 {
@@ -9,7 +10,7 @@ public class EmpDeptSalgradeTests
     {
         var emps = Database.GetEmps();
 
-        List<Emp> result = null; 
+        List<Emp> result = emps.Where(e => e.Job == "SALESMAN").ToList(); 
 
         Assert.Equal(2, result.Count);
         Assert.All(result, e => Assert.Equal("SALESMAN", e.Job));
@@ -22,7 +23,7 @@ public class EmpDeptSalgradeTests
     {
         var emps = Database.GetEmps();
 
-        List<Emp> result = null; 
+        List<Emp> result = emps.Where(e => e.DeptNo == 30).OrderByDescending(e => e.Sal).ToList(); 
 
         Assert.Equal(2, result.Count);
         Assert.True(result[0].Sal >= result[1].Sal);
@@ -36,7 +37,7 @@ public class EmpDeptSalgradeTests
         var emps = Database.GetEmps();
         var depts = Database.GetDepts();
 
-        List<Emp> result = null; 
+        List<Emp> result = emps.Where(e => e.DeptNo == depts.Where(d => d.Loc == "CHICAGO").ToList().Count).ToList(); 
 
         Assert.All(result, e => Assert.Equal(30, e.DeptNo));
     }
@@ -48,13 +49,13 @@ public class EmpDeptSalgradeTests
     {
         var emps = Database.GetEmps();
 
-        //var result = null; 
+        var result = emps.Select(e => new { EName = e.EName, Sal = e.Sal }); 
         
-        // Assert.All(result, r =>
-        // {
-        //     Assert.False(string.IsNullOrWhiteSpace(r.EName));
-        //     Assert.True(r.Sal > 0);
-        // });
+        Assert.All(result, r =>
+        {
+        Assert.False(string.IsNullOrWhiteSpace(r.EName));
+        Assert.True(r.Sal > 0);
+        });
     }
 
     // 5. JOIN Emp to Dept
@@ -65,9 +66,9 @@ public class EmpDeptSalgradeTests
         var emps = Database.GetEmps();
         var depts = Database.GetDepts();
 
-        //var result = null; 
+        var result = emps.Join(depts, e => e.DeptNo, d => d.DeptNo, (e,d) => new {EName = e.EName, DName = d.DName}).ToList();
 
-        //Assert.Contains(result, r => r.DName == "SALES" && r.EName == "ALLEN");
+        Assert.Contains(result, r => r.DName == "SALES" && r.EName == "ALLEN");
     }
 
     // 6. Group by DeptNo
@@ -75,10 +76,10 @@ public class EmpDeptSalgradeTests
     [Fact]
     public void ShouldCountEmployeesPerDepartment()
     {
-        var emps = Database.GetEmps();
+        // var emps = Database.GetEmps();
 
-        // var result = null; 
-        //
+        // var result =  
+        
         // Assert.Contains(result, g => g.DeptNo == 30 && g.Count == 2);
     }
 
