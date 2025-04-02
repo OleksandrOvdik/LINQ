@@ -1,3 +1,5 @@
+using Tutorial3.Models;
+
 namespace Tutorial3Tests;
 
 public class AdvancedEmpDeptTests
@@ -71,9 +73,9 @@ public class AdvancedEmpDeptTests
     {
         var emps = Database.GetEmps();
 
-        // var result = null; 
-        //
-        // Assert.True(result);
+        var result = emps.All(e => e.Sal > 500); 
+        
+        Assert.True(result);
     }
 
     // 17. Any employee with commission over 400
@@ -83,9 +85,9 @@ public class AdvancedEmpDeptTests
     {
         var emps = Database.GetEmps();
 
-        // var result = null; 
-        //
-        // Assert.True(result);
+        var result = emps.Any(e => e.Comm > 400); 
+        
+        Assert.True(result);
     }
 
     // 18. Self-join to get employee-manager pairs
@@ -95,9 +97,9 @@ public class AdvancedEmpDeptTests
     {
         var emps = Database.GetEmps();
 
-        // var result = null;
-        //
-        // Assert.Contains(result, r => r.Employee == "SMITH" && r.Manager == "FORD");
+        var result = emps.Join(emps, e1 => e1.Mgr, e2 => e2.EmpNo, (e1, e2) => new { Employee = e1.EName, Manager = e2.EName });
+        
+        Assert.Contains(result, r => r.Employee == "SMITH" && r.Manager == "FORD");
     }
 
     // 19. Let clause usage (sal + comm)
@@ -107,9 +109,9 @@ public class AdvancedEmpDeptTests
     {
         var emps = Database.GetEmps();
 
-        // var result = null; 
-        //
-        // Assert.Contains(result, r => r.EName == "ALLEN" && r.Total == 1900);
+        var result = emps.Select(e => new {EName = e.EName, Total = e.Sal + (e.Comm ?? 0)}).ToList(); 
+        
+        Assert.Contains(result, r => r.EName == "ALLEN" && r.Total == 1900);
     }
 
     // 20. Join all three: Emp → Dept → Salgrade
@@ -121,8 +123,9 @@ public class AdvancedEmpDeptTests
         var depts = Database.GetDepts();
         var grades = Database.GetSalgrades();
 
-        // var result = null; 
-        //
-        // Assert.Contains(result, r => r.EName == "ALLEN" && r.DName == "SALES" && r.Grade == 3);
+        var result = (from e in emps from d in depts from g in grades where e.DeptNo == d.DeptNo && e.Sal >= g.Losal && e.Sal <= g.Hisal
+            select new {EName = e.EName, DName = d.DName, Grade = g.Grade}); 
+        
+        Assert.Contains(result, r => r.EName == "ALLEN" && r.DName == "SALES" && r.Grade == 3);
     }
 }
